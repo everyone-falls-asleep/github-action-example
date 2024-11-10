@@ -45,22 +45,25 @@ jobs:
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          REPO_URL: https://github.com/${{ github.repository }}
           BRANCH_NAME: ${{ env.BRANCH_NAME }}
           COMMIT_MESSAGE: ${{ env.COMMIT_MESSAGE }}
-          GITHUB_ACTOR: ${{ github.actor }}
           COMMIT_SHA: ${{ github.sha }}
+          COMMIT_URL: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
+          GITHUB_ACTOR: ${{ github.actor }}
         run: |
           curl -H "Content-Type: application/json" \
           -d '{
                 "embeds": [{
                   "title": "✅ Deployment Succeeded",
+                  "description": "[View Repository]('"${REPO_URL}"') | [View Commit]('"${COMMIT_URL}"')",
                   "color": 3066993,
                   "fields": [
-                    {"name": "Repository", "value": "**'"${GITHUB_REPOSITORY}"'**", "inline": true},
+                    {"name": "Repository", "value": "[**'"${GITHUB_REPOSITORY}"'**]('"${REPO_URL}"')", "inline": true},
                     {"name": "Branch", "value": "`'"${BRANCH_NAME}"'`", "inline": true},
                     {"name": "Commit Message", "value": "'"${COMMIT_MESSAGE}"'", "inline": false},
                     {"name": "Triggered By", "value": "'"${GITHUB_ACTOR}"'", "inline": true},
-                    {"name": "Commit SHA", "value": "'"${COMMIT_SHA}"'", "inline": false}
+                    {"name": "Commit SHA", "value": "[`'"${COMMIT_SHA}"'`]('"${COMMIT_URL}"')", "inline": false}
                   ],
                   "footer": {
                     "text": "Deployment Status"
@@ -75,22 +78,25 @@ jobs:
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          REPO_URL: https://github.com/${{ github.repository }}
           BRANCH_NAME: ${{ env.BRANCH_NAME }}
           COMMIT_MESSAGE: ${{ env.COMMIT_MESSAGE }}
-          GITHUB_ACTOR: ${{ github.actor }}
           COMMIT_SHA: ${{ github.sha }}
+          COMMIT_URL: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
+          GITHUB_ACTOR: ${{ github.actor }}
         run: |
           curl -H "Content-Type: application/json" \
           -d '{
                 "embeds": [{
                   "title": "❌ Deployment Failed",
+                  "description": "[View Repository]('"${REPO_URL}"') | [View Commit]('"${COMMIT_URL}"')",
                   "color": 15158332,
                   "fields": [
-                    {"name": "Repository", "value": "**'"${GITHUB_REPOSITORY}"'**", "inline": true},
+                    {"name": "Repository", "value": "[**'"${GITHUB_REPOSITORY}"'**]('"${REPO_URL}"')", "inline": true},
                     {"name": "Branch", "value": "`'"${BRANCH_NAME}"'`", "inline": true},
                     {"name": "Commit Message", "value": "'"${COMMIT_MESSAGE}"'", "inline": false},
                     {"name": "Triggered By", "value": "'"${GITHUB_ACTOR}"'", "inline": true},
-                    {"name": "Commit SHA", "value": "'"${COMMIT_SHA}"'", "inline": false}
+                    {"name": "Commit SHA", "value": "[`'"${COMMIT_SHA}"'`]('"${COMMIT_URL}"')", "inline": false}
                   ],
                   "footer": {
                     "text": "Deployment Status"

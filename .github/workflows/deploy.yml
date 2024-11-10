@@ -17,4 +17,9 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
-          script: whoami > ~/output
+          script: |
+            cd ~/git/github-action-example
+            git clean -fd
+            git fetch
+            git reset --hard origin/master
+            ./run.sh

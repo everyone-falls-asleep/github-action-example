@@ -10,6 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Test SSH Connection
         uses: appleboy/ssh-action@v1.1.0
         with:
@@ -29,10 +34,6 @@ jobs:
             rm /tmp/vault_password
             ./run.sh
 
-      - name: Get Commit Message
-        id: commit
-        run: echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
-
       - name: Send Discord Notification on Success
         if: success()
         env:
@@ -40,9 +41,11 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           BRANCH_NAME: ${{ env.BRANCH_NAME }}
           COMMIT_MESSAGE: ${{ env.COMMIT_MESSAGE }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          COMMIT_SHA: ${{ github.sha }}
         run: |
           curl -X POST -H "Content-Type: application/json" \
-          -d "{\"content\": \"✅ **${GITHUB_REPOSITORY}** has been successfully deployed to \`${BRANCH_NAME}\` branch!\n**Commit Message:** ${COMMIT_MESSAGE}\"}" \
+          -d "{\"content\": \"✅ **${GITHUB_REPOSITORY}** has been successfully deployed to \`${BRANCH_NAME}\` branch!\n**Commit Message:** ${COMMIT_MESSAGE}\n**Triggered By:** ${GITHUB_ACTOR}\n**Commit SHA:** ${COMMIT_SHA}\"}" \
           $DISCORD_WEBHOOK_URL
 
       - name: Send Discord Notification on Failure
@@ -50,9 +53,11 @@ jobs:
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          BRANCH_NAME: ${{ env.BRANCH_NAME }}
-          COMMIT_MESSAGE: ${{ env.COMMIT_MESSAGE }}
+          BRANCH_NAME: ${{ github.ref_name }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          COMMIT_SHA: ${{ github.sha }}
         run: |
           curl -X POST -H "Content-Type: application/json" \
-          -d "{\"content\": \"❌ **${GITHUB_REPOSITORY}** deployment to \`${BRANCH_NAME}\` branch failed.\n**Commit Message:** ${COMMIT_MESSAGE}\nPlease check the logs for more details.\"}" \
+          -d "{\"content\": \"❌ **${GITHUB_REPOSITORY}** deployment to \`${BRANCH_NAME}\` branch failed.\n**Commit Message:** ${COMMIT_MESSAGE}\n**Triggered By:** ${GITHUB_ACTOR}\n**Commit SHA:** ${COMMIT_SHA}\nPlease check the logs for more details.\"}" \
           $DISCORD_WEBHOOK_URL

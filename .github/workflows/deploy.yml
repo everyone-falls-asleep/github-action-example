@@ -1,11 +1,23 @@
 name: Test Workflow
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
 
 jobs:
-  hello_world_job:
+  ssh_test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Print Hello World
-        run: echo "Hello, world!"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test SSH Connection
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+          script: whoami

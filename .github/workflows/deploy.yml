@@ -18,6 +18,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
           script: |
+            set -e
             cd ~/git/github-action-example
             git clean -fd
             git fetch
@@ -28,10 +29,30 @@ jobs:
             rm /tmp/vault_password
             ./run.sh
 
-      - name: Send Discord Notification
+      - name: Get Commit Message
+        id: commit
+        run: echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+
+      - name: Send Discord Notification on Success
+        if: success()
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          BRANCH_NAME: ${{ env.BRANCH_NAME }}
+          COMMIT_MESSAGE: ${{ env.COMMIT_MESSAGE }}
         run: |
           curl -X POST -H "Content-Type: application/json" \
-          -d '{"content": "Test SSH Connection job completed successfully!"}' \
+          -d "{\"content\": \"✅ **${GITHUB_REPOSITORY}** has been successfully deployed to \`${BRANCH_NAME}\` branch!\n**Commit Message:** ${COMMIT_MESSAGE}\"}" \
+          $DISCORD_WEBHOOK_URL
+
+      - name: Send Discord Notification on Failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          BRANCH_NAME: ${{ env.BRANCH_NAME }}
+          COMMIT_MESSAGE: ${{ env.COMMIT_MESSAGE }}
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+          -d "{\"content\": \"❌ **${GITHUB_REPOSITORY}** deployment to \`${BRANCH_NAME}\` branch failed.\n**Commit Message:** ${COMMIT_MESSAGE}\nPlease check the logs for more details.\"}" \
           $DISCORD_WEBHOOK_URL

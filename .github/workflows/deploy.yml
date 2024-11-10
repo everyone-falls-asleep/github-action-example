@@ -17,4 +17,4 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
-          script: whoami > /home/ubuntu/output
+          script: whoami > ~/output

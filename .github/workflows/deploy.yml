@@ -22,7 +22,7 @@ jobs:
             git clean -fd
             git fetch
             git reset --hard origin/master
-            mv .env.production .env -f
+            cp .env.production .env -f
             echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" >/tmp/vault_password
             ansible-vault decrypt .env --vault-password-file=/tmp/vault_password
             rm /tmp/vault_password

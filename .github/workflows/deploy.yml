@@ -23,3 +23,11 @@ jobs:
             git fetch
             git reset --hard origin/master
             ./run.sh
+
+      - name: Send Discord Notification
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+          -d '{"content": "Test SSH Connection job completed successfully!"}' \
+          $DISCORD_WEBHOOK_URL

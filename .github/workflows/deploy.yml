@@ -40,7 +40,7 @@ jobs:
             rm /tmp/vault_password
             ./run.sh
 
-      - name: Send Discord Notification on Success
+      - name: Send Discord Notification on Success with Embed
         if: success()
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
@@ -50,20 +50,52 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
           COMMIT_SHA: ${{ github.sha }}
         run: |
-          curl -X POST -H "Content-Type: application/json" \
-          -d "{\"content\": \"✅ **${GITHUB_REPOSITORY}** has been successfully deployed to \`${BRANCH_NAME}\` branch!\n**Commit Message:** ${COMMIT_MESSAGE}\n**Triggered By:** ${GITHUB_ACTOR}\n**Commit SHA:** ${COMMIT_SHA}\"}" \
+          curl -H "Content-Type: application/json" \
+          -d '{
+                "embeds": [{
+                  "title": "✅ Deployment Succeeded",
+                  "color": 3066993,
+                  "fields": [
+                    {"name": "Repository", "value": "**'"${GITHUB_REPOSITORY}"'**", "inline": true},
+                    {"name": "Branch", "value": "`'"${BRANCH_NAME}"'`", "inline": true},
+                    {"name": "Commit Message", "value": "'"${COMMIT_MESSAGE}"'", "inline": false},
+                    {"name": "Triggered By", "value": "'"${GITHUB_ACTOR}"'", "inline": true},
+                    {"name": "Commit SHA", "value": "'"${COMMIT_SHA}"'", "inline": false}
+                  ],
+                  "footer": {
+                    "text": "Deployment Status"
+                  },
+                  "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
+                }]
+              }' \
           $DISCORD_WEBHOOK_URL
 
-      - name: Send Discord Notification on Failure
+      - name: Send Discord Notification on Failure with Embed
         if: failure()
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          BRANCH_NAME: ${{ github.ref_name }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          BRANCH_NAME: ${{ env.BRANCH_NAME }}
+          COMMIT_MESSAGE: ${{ env.COMMIT_MESSAGE }}
           GITHUB_ACTOR: ${{ github.actor }}
           COMMIT_SHA: ${{ github.sha }}
         run: |
-          curl -X POST -H "Content-Type: application/json" \
-          -d "{\"content\": \"❌ **${GITHUB_REPOSITORY}** deployment to \`${BRANCH_NAME}\` branch failed.\n**Commit Message:** ${COMMIT_MESSAGE}\n**Triggered By:** ${GITHUB_ACTOR}\n**Commit SHA:** ${COMMIT_SHA}\nPlease check the logs for more details.\"}" \
+          curl -H "Content-Type: application/json" \
+          -d '{
+                "embeds": [{
+                  "title": "❌ Deployment Failed",
+                  "color": 15158332,
+                  "fields": [
+                    {"name": "Repository", "value": "**'"${GITHUB_REPOSITORY}"'**", "inline": true},
+                    {"name": "Branch", "value": "`'"${BRANCH_NAME}"'`", "inline": true},
+                    {"name": "Commit Message", "value": "'"${COMMIT_MESSAGE}"'", "inline": false},
+                    {"name": "Triggered By", "value": "'"${GITHUB_ACTOR}"'", "inline": true},
+                    {"name": "Commit SHA", "value": "'"${COMMIT_SHA}"'", "inline": false}
+                  ],
+                  "footer": {
+                    "text": "Deployment Status"
+                  },
+                  "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
+                }]
+              }' \
           $DISCORD_WEBHOOK_URL
